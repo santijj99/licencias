@@ -1,52 +1,27 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: licencias-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-licencias}
-      POSTGRES_USER: ${POSTGRES_USER:-licencias}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definí POSTGRES_PASSWORD en .env}
-    volumes:
-      - licencias_pgdata:/var/lib/postgresql/data
-    ports:
-      # Solo para debug desde el VPS; en producción podés quitar "ports"
-      - "${POSTGRES_PUBLISH_PORT:-5432}:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-licencias} -d ${POSTGRES_DB:-licencias}"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-    networks:
-      - licencias-net
-
   licencias:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: licencias-api
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       SERVER_PORT: ${SERVER_PORT:-8080}
-      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-licencias}
-      DB_USERNAME: ${POSTGRES_USER:-licencias}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      # Postgres compartido (contenedor athland-postgres en red athland-net)
+      DB_URL: jdbc:postgresql://athland-postgres:5432/${LICENCIAS_DB:-licencias}
+      DB_USERNAME: ${POSTGRES_USER:-athland}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Definí POSTGRES_PASSWORD (misma que infra/postgres)}
       JWT_SECRET: ${JWT_SECRET:?Definí JWT_SECRET en .env}
       AES_KEY: ${AES_KEY:?Definí AES_KEY en .env (32 chars)}
-      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5000}
       JAVA_OPTS: ${JAVA_OPTS:--Xms128m -Xmx512m -XX:+UseG1GC}
     ports:
       - "${LICENCIAS_PUBLISH_PORT:-8080}:8080"
     networks:
-      - licencias-net
-
-volumes:
-  licencias_pgdata:
+      - athland-net
 
 networks:
-  licencias-net:
-    driver: bridge
+  athland-net:
+    external: true
+    name: athland-net
