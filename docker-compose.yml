@@ -8,10 +8,10 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       SERVER_PORT: ${SERVER_PORT:-8080}
-      # Postgres compartido (contenedor athland-postgres en red athland-net)
+      # Postgres compartido (obligatorio: user athland)
       DB_URL: jdbc:postgresql://athland-postgres:5432/${LICENCIAS_DB:-licencias}
-      DB_USERNAME: ${POSTGRES_USER:-athland}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?Definí POSTGRES_PASSWORD (misma que infra/postgres)}
+      DB_USERNAME: ${DB_USERNAME:-athland}
+      DB_PASSWORD: ${DB_PASSWORD:?Definí DB_PASSWORD en .env (mismo que POSTGRES_PASSWORD del postgres)}
       JWT_SECRET: ${JWT_SECRET:?Definí JWT_SECRET en .env}
       AES_KEY: ${AES_KEY:?Definí AES_KEY en .env (32 chars)}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5000}
