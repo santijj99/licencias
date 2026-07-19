@@ -32,7 +32,9 @@ public class ConexionEmpresaRequest {
     @Size(max = 100)
     private String username;
 
-    @NotBlank
+    /**
+     * Obligatoria al crear. En actualización, si viene vacía se conserva la password actual.
+     */
     @Size(max = 200)
     private String password;
 

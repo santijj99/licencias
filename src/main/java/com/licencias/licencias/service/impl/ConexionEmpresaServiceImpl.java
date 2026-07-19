@@ -32,6 +32,9 @@ public class ConexionEmpresaServiceImpl implements ConexionEmpresaService {
     @Transactional
     @Auditable(accion = "CREAR_CONEXION", recurso = "CONEXION")
     public ConexionEmpresaResponse crear(ConexionEmpresaRequest request) {
+        if (!StringUtils.hasText(request.getPassword())) {
+            throw new ConflictException("La password es obligatoria al crear la conexión");
+        }
         if (conexionEmpresaRepository.existsByEmpresaId(request.getEmpresaId())) {
             throw new ConflictException("La empresa ya tiene una conexión configurada");
         }
@@ -50,10 +53,15 @@ public class ConexionEmpresaServiceImpl implements ConexionEmpresaService {
                 && conexionEmpresaRepository.existsByEmpresaId(request.getEmpresaId())) {
             throw new ConflictException("La empresa destino ya tiene una conexión configurada");
         }
-        conexionEmpresaMapper.updateEntity(request, conexion);
+        // Actualización explícita (mismo set de campos que al crear)
         conexion.setEmpresa(findEmpresa(request.getEmpresaId()));
+        conexion.setHost(request.getHost().trim());
+        conexion.setPuerto(request.getPuerto());
+        conexion.setDatabaseName(request.getDatabaseName().trim());
+        conexion.setUsername(request.getUsername().trim());
+        conexion.setSsl(request.getSsl() == null || request.getSsl());
         if (StringUtils.hasText(request.getPassword())) {
-            conexion.setPasswordEncriptada(aesEncryptionService.encrypt(request.getPassword()));
+            conexion.setPasswordEncriptada(aesEncryptionService.encrypt(request.getPassword().trim()));
         }
         return conexionEmpresaMapper.toResponse(conexionEmpresaRepository.save(conexion));
     }

@@ -1,0 +1,15 @@
+target/
+.git/
+.gitignore
+.env
+.env.*
+!.env.example
+!.env.docker.example
+*.md
+.idea/
+*.iml
+.vscode/
+mvnw
+mvnw.cmd
+.mvn/
+src/test/
