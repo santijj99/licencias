@@ -70,10 +70,11 @@ public class DispositivoServiceImpl implements DispositivoService {
     @Transactional
     @Auditable(accion = "ELIMINAR_DISPOSITIVO", recurso = "DISPOSITIVO")
     public void eliminar(Long id) {
-        Dispositivo dispositivo = findEntity(id);
-        dispositivo.softDelete();
-        dispositivo.setActivo(false);
-        dispositivoRepository.save(dispositivo);
+        if (!dispositivoRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Dispositivo", id);
+        }
+        // Hard delete: libera el UUID para que el mismo equipo pueda asociarse a otra empresa.
+        dispositivoRepository.hardDeleteById(id);
     }
 
     private Dispositivo findEntity(Long id) {

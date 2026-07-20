@@ -128,6 +128,8 @@ public class LicenciaServiceImpl implements LicenciaService {
                 .orElse(null);
 
         if (dispositivo == null) {
+            // Si quedó soft-deleted de antes, liberar UUID para re-registrar.
+            dispositivoRepository.hardDeleteSoftDeletedByUuid(request.getUuidDispositivo());
             long activos = dispositivoRepository.countByEmpresaIdAndActivoTrue(empresa.getId());
             if (activos >= licencia.getCantidadMaximaDispositivos()) {
                 throw new LicenseValidationException(
@@ -145,7 +147,7 @@ public class LicenciaServiceImpl implements LicenciaService {
         } else {
             if (!dispositivo.getEmpresa().getId().equals(empresa.getId())) {
                 throw new LicenseValidationException(
-                        "El dispositivo pertenece a otra empresa",
+                        "El dispositivo pertenece a otra empresa. Liberarlo desde admin → Dispositivos.",
                         "DISPOSITIVO_OTRA_EMPRESA");
             }
             if (!Boolean.TRUE.equals(dispositivo.getActivo())) {

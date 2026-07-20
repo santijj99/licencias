@@ -72,9 +72,9 @@ public class DispositivoController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN_EMPRESA')")
-    @Operation(summary = "Eliminar dispositivo (soft delete)")
+    @Operation(summary = "Eliminar dispositivo (hard delete: libera UUID para otra empresa)")
     public ResponseEntity<ApiResponse<Void>> eliminar(@PathVariable Long id) {
         dispositivoService.eliminar(id);
-        return ResponseEntity.ok(ApiResponse.ok("Dispositivo eliminado", null));
+        return ResponseEntity.ok(ApiResponse.ok("Dispositivo liberado", null));
     }
 }
